@@ -1,0 +1,11 @@
+{
+    "venvPath": ".",
+    "venv": "react",
+    "pythonVersion": "3.12",
+    "include": [
+        "backend",
+        "frontend"
+    ],
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false
+}

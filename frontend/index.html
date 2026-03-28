@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Assistant Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://3dmol.org/build/3Dmol-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <nav class="app-navbar glass" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
+        <!-- Left Side: Navigation Links -->
+        <div class="nav-left">
+            <span class="nav-brand">Scientific AI</span>
+            
+            <button class="nav-btn" onclick="scrollToSection('home-section')">Home</button>
+            <button class="nav-btn" onclick="toggleMolecularSearch()">Molecular Explorer</button>
+            
+            <button class="nav-btn" onclick="scrollToSection('agents-hub-section')">Agents</button>
+
+            <button class="nav-btn" onclick="openGeneralChat()">Scientific Assistant</button>
+            <button class="nav-btn" onclick="scrollToSection('about-section')">About</button>
+        </div>
+
+        <!-- Right Side: Auth & Theme -->
+        <div class="nav-right">
+            <div id="nav-unauth" style="display: flex; gap: 15px;">
+                <button class="nav-btn" onclick="showView('login')">Login</button>
+                <button class="btn primary-btn" style="padding: 8px 16px;" onclick="showView('register')">Register</button>
+            </div>
+            <div id="nav-auth" class="hidden" style="display: flex; gap: 15px; align-items: center;">
+                <div class="profile-container">
+                    <div class="profile-trigger" id="profile-trigger" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <div class="profile-circle" id="nav-user-icon" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--secondary)); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">?</div>
+                        <span id="nav-user-display" style="font-weight: 600;">User</span>
+                    </div>
+                    <div class="dropdown-menu" id="profile-dropdown">
+                        <div class="dropdown-header">
+                            <span class="user-name" id="dropdown-user-name">User Name</span>
+                            <span class="user-role" id="dropdown-user-role">Researcher</span>
+                        </div>
+                        <div class="dropdown-item" onclick="showProfileSection('profile')">
+                            <i>👤</i> My Profile
+                        </div>
+                        <div class="dropdown-item" onclick="showProfileSection('settings')">
+                            <i>⚙️</i> Settings
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item danger" id="nav-logout-btn">
+                            <i>🚪</i> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <select id="global-theme-select" class="theme-select glass" onchange="changeTheme(this.value)" style="width: auto; padding: 6px 12px; margin-left: 15px; text-align: center; text-align-last: center;">
+                <option value="dark">Dark Theme</option>
+                <option value="light">Light Theme</option>
+                <option value="doctor">Doctor Theme</option>
+                <option value="researcher">Researcher Theme</option>
+                <option value="admin">Admin Theme</option>
+            </select>
+        </div>
+    </nav>
+
+    <!-- Global Toast -->
+    <div id="toast" class="toast">Notification</div>
+
+    <div class="view-container">
+        <!-- 1. UNIFIED MAIN SCROLL VIEW (Home, Agents, About) -->
+        <div id="main-scroll-view" class="view active-view scroll-styled" style="overflow-y: auto; height: 100%; scroll-behavior: smooth;">
+            <!-- Home Section -->
+            <section id="home-section" class="content-section" style="text-align: center; flex-direction: column; min-height: calc(100vh - 60px);">
+                <div class="molecule-icon" style="font-size: 5rem; color: var(--accent); margin-bottom: 25px;">⚛</div>
+                <h1 style="font-size: 3.5rem; margin-bottom: 25px; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: var(--text-main); -webkit-text-fill-color: transparent;">Agentic Scientific Assistant</h1>
+                <p style="color: var(--text-muted); font-size: 1.25rem; line-height: 1.6; max-width: 800px; margin: 0 auto;">
+                    Welcome to the future of pharmaceutical and clinical research. <br/>
+                    A world-class multi-agent environment designed for modern researchers.
+                </p>
+                <div style="margin-top: 40px; display: flex; gap: 20px; justify-content: center;">
+                    <button class="btn outline-btn" onclick="scrollToSection('about-section')" style="padding: 12px 30px;">Learn More</button>
+                    <button class="btn primary-btn" onclick="scrollToSection('agents-hub-section')" style="padding: 12px 30px;">Access Platform</button>
+                </div>
+            </section>
+
+            <!-- Agents Hub Section -->
+            <section id="agents-hub-section" class="content-section">
+                <h2 style="font-size: 3rem; margin-bottom: 20px; color: var(--secondary); text-align: center;">Select a Research Module</h2>
+                <p style="color: var(--text-muted); margin-bottom: 50px; font-size: 1.25rem; text-align: center;">Choose a specialized agent to begin your scientific exploration.</p>
+                
+                <div class="agents-grid">
+                    <div class="agent-card glass" onclick="selectAgent('CRA', 'Chemistry Research Agent')">
+                        <div class="molecule-icon" style="text-align: center;">🧪</div>
+                        <h3 style="text-align: center;">Chemistry Agent</h3>
+                        <p style="text-align: center;">Molecular viability, structural safety, and reaction reasoning.</p>
+                    </div>
+                    <div class="agent-card glass" onclick="selectAgent('DDRA', 'Drug Discovery Agent')">
+                        <div class="molecule-icon" style="text-align: center;">💊</div>
+                        <h3 style="text-align: center;">Drug Discovery</h3>
+                        <p style="text-align: center;">Target identification, ADMET profiling, and clinical data analysis.</p>
+                    </div>
+                    <div class="agent-card glass bottom-center" onclick="selectAgent('DPEA', 'Prescription Agent')">
+                        <div class="molecule-icon" style="text-align: center;">📋</div>
+                        <h3 style="text-align: center;">Prescription Evaluation</h3>
+                        <p style="text-align: center;">Dosage verification, compatibility checks, and clinical evaluation.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Section -->
+            <section id="about-section" class="content-section">
+                <h2 style="font-size: 3rem; margin-bottom: 40px; color: var(--secondary); text-align: center;">About Our Architecture</h2>
+                <div style="color: var(--text-muted); font-size: 1.2rem; line-height: 1.8; text-align: left; display: grid; gap: 20px; max-width: 900px; width: 100%;">
+                    <p style="text-align: center; margin-bottom: 20px; font-size: 1.25rem;">This platform utilizes specialized multi-agent AI modules to assist in high-level scientific reasoning securely and efficiently.</p>
+                    <div style="padding: 20px 30px; border-left: 4px solid var(--accent); background: rgba(255,255,255,0.01);">
+                        <strong style="color: var(--accent); font-size: 1.2rem;">Chemistry Research Agent (CRA)</strong><br/>
+                        Analyzes molecular viability and structural safety dynamically.
+                    </div>
+                    <div style="padding: 20px 30px; border-left: 4px solid #00e676; background: rgba(255,255,255,0.01);">
+                        <strong style="color: #00e676; font-size: 1.2rem;">Drug Discovery Agent (DDRA)</strong><br/>
+                        Accelerates candidate feasibility analyses via biological dataset endpoints.
+                    </div>
+                    <div style="padding: 20px 30px; border-left: 4px solid #ff9e00; background: rgba(255,255,255,0.01);">
+                        <strong style="color: #ff9e00; font-size: 1.2rem;">Prescription Evaluation Agent (DPEA)</strong><br/>
+                        Provides clinical insight and contraindication checks relying on real-world FAERS events.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="guest-chat-view" class="view hidden" style="position: relative;">
+            <button class="detached-back-btn" onclick="showView('main-scroll')">← Home</button>
+            <main class="chat-container glass" style="height: 100%; border-radius: 0; border: none;">
+                <header class="app-header">
+                    <div class="header-left">
+                        <div class="molecule-icon small" style="color: var(--accent);">✦</div>
+                        <h2 id="guest-agent-title">Select an Agent</h2>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <button class="nav-btn" style="font-size: 0.8rem; color: var(--accent);" onclick="startNewChat()">➕ New Chat</button>
+                        <button class="nav-btn" style="font-size: 0.8rem; color: var(--secondary);" onclick="showView('molecular')">🔍 Use Molecular Search</button>
+                    </div>
+                </header>
+                <div class="chat-history scroll-styled" id="guest-chat-history"></div>
+                <div class="chat-input-area">
+                    <form id="guest-query-form">
+                        <input type="text" id="guest-query-input" placeholder="Type your query for the agent..." required>
+                        <button type="submit" class="btn primary-btn icon-btn" style="width: 45px; height: 45px; min-width: 45px;">➤</button>
+                    </form>
+                </div>
+            </main>
+        </div>
+
+        <div id="login-view" class="view hidden" style="display: flex; align-items: center; justify-content: center; position: relative;">
+            <button class="detached-back-btn" onclick="showView('main-scroll')">← Home</button>
+            <div class="login-card glass">
+                <div class="logo-box">
+                    <div class="molecule-icon">⚕</div>
+                    <h1>Welcome Back</h1>
+                </div>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Role</label>
+                        <select id="login-role">
+                            <option value="doctor">Doctor</option>
+                            <option value="researcher">Researcher</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="width: 100%;" id="login-btn">
+                        <span>Authenticate</span>
+                    </button>
+                </form>
+                <div style="margin-top: 15px;">
+                    <a href="#" onclick="showView('reset'); return false;" style="color: var(--secondary); font-size: 0.9rem;">Forgot Password?</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="register-view" class="view hidden" style="display: flex; align-items: center; justify-content: center; position: relative;">
+            <button class="detached-back-btn" onclick="showView('main-scroll')">← Home</button>
+            <div class="login-card glass">
+                <div class="logo-box">
+                    <div class="molecule-icon">⊕</div>
+                    <h1>Create Account</h1>
+                </div>
+                <form id="register-form">
+                    <div class="input-group">
+                        <label>New Username</label>
+                        <input type="text" id="reg-username" required>
+                    </div>
+                    <div class="input-group">
+                        <label>New Password</label>
+                        <input type="password" id="reg-password" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Account Role</label>
+                        <select id="reg-role">
+                            <option value="doctor">Doctor</option>
+                            <option value="researcher">Researcher</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="width: 100%;" id="reg-btn">
+                        <span>Register</span>
+                    </button>
+                </form>
+                <div style="margin-top: 15px;">
+                    <a href="#" onclick="showView('reset'); return false;" style="color: var(--secondary); font-size: 0.9rem;">Forgot Password?</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="reset-view" class="view hidden" style="display: flex; align-items: center; justify-content: center; position: relative;">
+            <button class="detached-back-btn" onclick="showView('main-scroll')">← Home</button>
+            <div class="login-card glass">
+                <div class="logo-box">
+                    <div class="molecule-icon">↺</div>
+                    <h1>Reset Password</h1>
+                </div>
+                <form id="reset-form">
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="res-username" required>
+                    </div>
+                    <div class="input-group">
+                        <label>New Password</label>
+                        <input type="password" id="res-password" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Confirm Your Role</label>
+                        <select id="res-role">
+                            <option value="doctor">Doctor</option>
+                            <option value="researcher">Researcher</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="width: 100%;" id="res-btn">
+                        <span>Reset Password</span>
+                    </button>
+                </form>
+                <div style="margin-top: 15px;">
+                    <a href="#" onclick="showView('login'); return false;" style="color: var(--text-muted); font-size: 0.9rem;">Return to Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. MOLECULAR EXPLORER VIEW (Standalone) -->
+        <div id="molecular-view" class="view hidden" style="padding: 20px;">
+            <div class="glass" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px;">
+                <header class="mol-header">
+                    <div class="header-left" style="gap: 15px;">
+                        <button class="detached-back-btn" onclick="showView('main-scroll')">← Home</button>
+                        <div class="molecule-icon small" style="color: var(--secondary); font-size: 1.5rem;">🔭</div>
+                        <h2 style="font-size: 1.5rem;">Molecular Universe</h2>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex: 0.6;">
+                        <input type="text" id="mol-search-input" placeholder="Search molecule name (e.g. Aspirin, Caffeine)..." style="flex: 1; border-radius: 12px;">
+                        <button class="btn primary-btn" onclick="searchMolecule('standalone')" style="width: auto; padding: 0 25px;">Search</button>
+                    </div>
+                </header>
+                
+                <div class="mol-main-content">
+                    <!-- Info Side -->
+                    <div class="mol-info-panel scroll-styled">
+                        <div class="mol-card">
+                            <h4>Molecule Name</h4>
+                            <p id="mol-name">No selection</p>
+                        </div>
+                        <div class="mol-card">
+                            <h4>Formula</h4>
+                            <p id="mol-formula">-</p>
+                        </div>
+                        <div id="mol-props-container" style="display: flex; flex-direction: column; gap: 15px;">
+                            <!-- Dynamic Cards -->
+                        </div>
+                    </div>
+                    
+                    <!-- 3D Side -->
+                    <div class="mol-visualizer-box">
+                        <div id="mol-3d-viewer" class="mol-3d-container"></div>
+                        <div id="mol-loading" class="hidden" style="position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10;">
+                            <span class="spinner"></span> 
+                        </div>
+                        <div style="position: absolute; bottom: 20px; right: 20px; color: var(--text-muted); font-size: 0.75rem; background: var(--surface-bg); padding: 5px 10px; border-radius: 8px;">
+                            Powered by 3Dmol.js
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile-view" class="view hidden" style="display: flex; align-items: center; justify-content: center; position: relative;">
+            <button class="detached-back-btn" onclick="showView('main-scroll')">← Home</button>
+            <div class="glass" style="padding: 50px; max-width: 650px; width: 100%; border-radius: 24px;">
+                <div id="profile-section-main">
+                    <div class="logo-box" style="text-align: center;">
+                        <div class="molecule-icon">👤</div>
+                        <h1 id="profile-title">My Profile</h1>
+                        <p id="profile-username-val" style="font-weight: 700; color: var(--accent); font-size: 1.2rem;"></p>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Account Role</span>
+                            <div id="profile-role-val" style="font-weight: 600; color: var(--secondary);"></div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Member Since</span>
+                            <div style="font-weight: 600;">March 2024</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Account Status</span>
+                            <div style="font-weight: 600; color: #00e676;">Active • Verified</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profile-section-settings" class="hidden">
+                    <h2 style="margin-bottom: 20px; font-size: 1.3rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">⚙️ Settings</h2>
+                    <div class="input-group">
+                        <label>Preferred Agent</label>
+                        <select id="pref-agent">
+                            <option value="auto">Auto Orchestrator</option>
+                            <option value="CRA">Chemistry Research Agent</option>
+                            <option value="DDRA">Drug Discovery Agent</option>
+                            <option value="DPEA">Prescription Agent</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Persistent Theme</label>
+                        <select id="pref-theme">
+                            <option value="dark">Dark Theme</option>
+                            <option value="light">Light Theme</option>
+                            <option value="doctor">Doctor Theme</option>
+                            <option value="researcher">Researcher Theme</option>
+                            <option value="admin">Admin Theme</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button id="profile-save-btn" class="btn primary-btn" style="flex: 2;" onclick="saveProfilePreferences()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. AUTHENTICATED CHAT VIEW -->
+        <div id="chat-view" class="view hidden" style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div class="chat-with-sidebar glass" style="max-width: 1200px; width: 100%; height: 100%; max-height: 850px; border-radius: 24px; overflow: hidden; border: 1px solid var(--glass-border);">
+                <!-- Sidebar -->
+                <aside class="chat-sidebar scroll-styled">
+                    <div class="sidebar-header" style="justify-content: center; padding: 20px 10px;">
+                        <div class="history-label" style="margin: 0;">Recent Explorations</div>
+                    </div>
+                    <div id="conversation-list" class="history-list">
+                        <!-- History Items -->
+                    </div>
+                </aside>
+
+                <!-- Main Chat -->
+                <main class="chat-main" style="position: relative;">
+                    <button class="detached-back-btn" onclick="showView('main-scroll')">← Home</button>
+                    <!-- Integrated Molecular Explorer Overlay -->
+                    <div id="integrated-mol-explorer" class="integrated-explorer glass hidden">
+                        <header class="integrated-header">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="color:var(--secondary); font-size: 1.2rem;">🔭</div>
+                                <span style="font-weight:700; font-size:0.9rem;">Integrated Molecular Workspace</span>
+                            </div>
+                            <button class="nav-btn" style="color:var(--danger); font-size:0.8rem;" onclick="toggleMolecularSearch()">✕ Close</button>
+                        </header>
+                        <div style="padding: 10px 15px; display: flex; gap: 8px; background: rgba(0,0,0,0.3);">
+                            <input type="text" id="int-mol-search-input" placeholder="Search molecule..." style="flex: 1; padding: 8px 12px; font-size: 0.9rem; border-radius: 8px;">
+                            <button class="btn primary-btn" onclick="searchMolecule('integrated')" style="width: auto; height: 38px;">🔍</button>
+                        </div>
+                        <div style="flex: 1; display: flex; overflow: hidden;">
+                            <div id="int-mol-info" class="scroll-styled" style="width: 220px; padding: 12px; border-right: 1px solid var(--glass-border); background: rgba(0,0,0,0.2);">
+                                <div class="mol-card" style="padding: 8px; margin-bottom: 8px;">
+                                    <h4 style="font-size: 0.6rem;">Molecule</h4>
+                                    <p id="int-mol-name" style="font-size: 0.8rem;">-</p>
+                                </div>
+                                <div id="int-mol-props-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                            </div>
+                            <div style="flex: 1; position: relative; background: #000;">
+                                <div id="int-mol-3d-viewer" style="width: 100%; height: 100%;"></div>
+                                <div id="int-mol-loading" class="hidden" style="position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10;">
+                                    <span class="spinner"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <header class="app-header">
+                        <div class="header-left">
+                            <div class="molecule-icon small">✦</div>
+                            <h2><span id="chat-agent-label">Research Workspace</span> <span id="current-role-badge" class="badge">Role</span></h2>
+                        </div>
+                        <div class="header-right" style="display: flex; gap: 12px;">
+                            <button class="nav-btn" style="font-size: 0.8rem; color: var(--secondary);" onclick="toggleMolecularSearch()">🔍 Use Molecular Search</button>
+                            <button class="btn outline-btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="exportChatToPDF()">Download PDF Report</button>
+                        </div>
+                    </header>
+                    <div class="chat-history scroll-styled" id="chat-history"></div>
+                    <div class="chat-input-area">
+                        <form id="query-form">
+                            <button type="button" class="btn secondary-btn" id="new-chat-input-btn" title="new chat" onclick="startNewChat()" style="width: 45px; height: 45px; min-width: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">+</button>
+                            <input type="text" id="query-input" placeholder="Ask a scientific or medical question..." required>
+                            <button type="submit" class="btn primary-btn icon-btn" style="width: 45px; height: 45px; min-width: 45px;">➤</button>
+                        </form>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- 8. ADMIN VIEW -->
+        <div id="admin-view" class="view hidden">
+            <main class="admin-container scroll-styled glass" style="height: 100%; border-radius: 0; border: none;">
+                <div class="admin-header-bar">
+                    <h2>Safety & Compliance Center: Pending Approvals</h2>
+                </div>
+                <div id="approvals-grid" class="approvals-grid">
+                    <!-- Cards -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
